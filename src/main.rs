@@ -4,6 +4,7 @@ use std::time::Duration;
 use std::io::{self, Write, ErrorKind};
 use std::cmp::Ordering;
 use std::path::Path;
+use std::process::Command;
 
 const FILE_CHECK_INTERVAL: u64 = 5;
 
@@ -98,7 +99,18 @@ fn main() {
                             std::process::exit(1);
                         }
                     }
-                },
+
+                    let command = Command::new("bash")
+                        .arg("-c")
+                        .arg("zenity --entry --text \'How many seconds for the next timer?\'")
+                        .output()
+                        .expect("Failed to execute command");
+                    // println!("{:#?}", String::from_utf8_lossy(&command.stdout));
+                    let new_timer = format!("echo '{}' > /tmp/timer-rs_input", String::from_utf8_lossy(&command.stdout));
+                    Command::new("sh")
+                        .arg("-c")
+                        .arg(new_timer);
+                    },
                 Err(e) => {
                     println!("Err: {}", e);
                     continue
