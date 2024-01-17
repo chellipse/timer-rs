@@ -4,7 +4,6 @@ use std::time::Duration;
 use std::io::{self, Write, ErrorKind};
 use std::cmp::Ordering;
 use std::path::Path;
-use std::process::Command;
 
 const FILE_CHECK_INTERVAL: u64 = 5;
 
@@ -14,9 +13,9 @@ const MAX_BAR: usize = 140;
 const FILEPATH: &str = "/tmp/timer-rs_input";
 
 // linearly interpolates A's position between B and C to D and E
-// fn lerp(a: f32, b: f32, c: f32, d: f32, e: f32) -> f32 {
-//     (a - b) * (e - d) / (c - b) + d
-// }
+fn lerp(a: f32, b: f32, c: f32, d: f32, e: f32) -> f32 {
+    (a - b) * (e - d) / (c - b) + d
+}
 
 // add or remove characters from the right until len == max
 fn adjust_len_right(mut msg: String, max: usize) -> String {
@@ -38,7 +37,7 @@ fn adjust_len_right(mut msg: String, max: usize) -> String {
 }
 
 fn mk_bar(val: &f32, low: &f32, high: &f32, bar_low: &f32, bar_max: usize) -> String {
-    let x: f32 = (val - low) * ((bar_max as f32 - 1.0) - bar_low) / (high - low) + bar_low;
+    let x = lerp(*val, *low, *high, *bar_low, bar_max as f32 - 1.0);
     let mut blocks: String = "█".repeat(x as usize);
     let y = x - x.trunc();
     let conversion = match y {
@@ -99,18 +98,7 @@ fn main() {
                             std::process::exit(1);
                         }
                     }
-
-                    let command = Command::new("bash")
-                        .arg("-c")
-                        .arg("zenity --entry --text \'How many seconds for the next timer?\'")
-                        .output()
-                        .expect("Failed to execute command");
-                    // println!("{:#?}", String::from_utf8_lossy(&command.stdout));
-                    let new_timer = format!("echo '{}' > /tmp/timer-rs_input", String::from_utf8_lossy(&command.stdout));
-                    Command::new("sh")
-                        .arg("-c")
-                        .arg(new_timer);
-                    },
+                },
                 Err(e) => {
                     println!("Err: {}", e);
                     continue
