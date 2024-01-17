@@ -2,13 +2,13 @@ use std::fs::{read_to_string, remove_file};
 use std::thread::sleep;
 use std::time::Duration;
 use std::io::{self, Write, ErrorKind};
-// use std::cmp::Ordering;
+use std::cmp::Ordering;
 use std::path::Path;
 
 const FILE_CHECK_INTERVAL: u64 = 5;
 
 const MIN_BAR: f32 = 0.0;
-const MAX_BAR: usize = 60;
+const MAX_BAR: usize = 140;
 
 const FILEPATH: &str = "/tmp/timer-rs_input";
 
@@ -18,23 +18,23 @@ const FILEPATH: &str = "/tmp/timer-rs_input";
 // }
 
 // add or remove characters from the right until len == max
-// fn adjust_len_right(mut msg: String, max: usize) -> String {
-//     let current_length = msg.chars().count();
+fn adjust_len_right(mut msg: String, max: usize) -> String {
+    let current_length = msg.chars().count();
 
-//     match current_length.cmp(&max) {
-//         Ordering::Less => {
-//             // Add spaces to the right side
-//             msg.push_str(&" ".repeat(max - current_length));
-//         }
-//         Ordering::Greater => {
-//             // Remove characters from the right side
-//             msg = msg.chars().take(max).collect();
-//         }
-//         Ordering::Equal => {}
-//     }
+    match current_length.cmp(&max) {
+        Ordering::Less => {
+            // Add spaces to the right side
+            msg.push_str(&" ".repeat(max - current_length));
+        }
+        Ordering::Greater => {
+            // Remove characters from the right side
+            msg = msg.chars().take(max).collect();
+        }
+        Ordering::Equal => {}
+    }
 
-//     msg
-// }
+    msg
+}
 
 fn mk_bar(val: &f32, low: &f32, high: &f32, bar_low: &f32, bar_max: usize) -> String {
     let x: f32 = (val - low) * ((bar_max as f32 - 1.0) - bar_low) / (high - low) + bar_low;
@@ -52,9 +52,8 @@ fn mk_bar(val: &f32, low: &f32, high: &f32, bar_low: &f32, bar_max: usize) -> St
         _ => "*",
     };
     blocks.push_str(conversion);
-    // let result = adjust_len_right(blocks, bar_max);
-    // result.to_string()
-    blocks.to_string()
+    let result = adjust_len_right(blocks, bar_max);
+    result.to_string()
 }
 
 fn timer(seconds: f32) {
@@ -64,9 +63,10 @@ fn timer(seconds: f32) {
     let sleep_dur = Duration::from_secs_f32(wait_interval);
 
     for i in ((low as u16)..(high as u16)).rev() {
+        // println!("i: {}", i);
         let bar: String = mk_bar(&(i as f32), &low, &high, &MIN_BAR, MAX_BAR);
-        print!("{}\r", bar);
-        io::stdout().flush().unwrap(); // Flush after printing
+        println!("{}", bar);
+        // io::stdout().flush().unwrap(); // Flush after printing
         sleep(sleep_dur)
     }
 }
@@ -82,7 +82,7 @@ fn try_file_as_u32() -> io::Result<u32>  {
 }
 
 fn main() {
-    println!("FILEPATH: {}", FILEPATH);
+    // println!("FILEPATH: {}", FILEPATH);
     loop {
         if Path::new(FILEPATH).exists() {
             // println!("File exists: {}", FILEPATH);
@@ -109,6 +109,7 @@ fn main() {
         }
         else {
             // println!("File does not exist: {}", FILEPATH);
+            println!("[IDLE]");
         }
         sleep(Duration::from_secs(FILE_CHECK_INTERVAL));
     }
