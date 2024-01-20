@@ -35,7 +35,7 @@ format = " <icon> $text "
 
 I use this nerdfont icon `󱎫`.
 
-### Installation
+## Installation
 
 Build from source using cargo.
 
